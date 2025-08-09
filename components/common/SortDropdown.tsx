@@ -1,3 +1,4 @@
+// components/common/SortDropdown.tsx
 interface Props {
   sortOrder: "asc" | "desc";
   onChange: (order: "asc" | "desc") => void;
@@ -5,7 +6,7 @@ interface Props {
 
 export default function SortDropdown({ sortOrder, onChange }: Props) {
   return (
-    <div className="mb-4">
+    <div>
       <label className="mr-2 font-medium text-gray-700">Sort by Price:</label>
       <select
         value={sortOrder}

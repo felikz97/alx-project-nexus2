@@ -1,23 +1,40 @@
 // components/common/SearchBar.tsx
-"use client";
+import { useState, useEffect } from "react";
 
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/store";
-import { setSearchTerm } from "@/store/filterSlice";
+interface Props {
+  value?: string;
+  onSearchChange?: (term: string) => void;
+  onSearchSubmit?: (term: string) => void;
+}
 
-export default function SearchBar() {
-  const dispatch = useDispatch();
-  const searchTerm = useSelector((state: RootState) => state.filter.searchTerm);
+export default function SearchBar({ value = "", onSearchChange, onSearchSubmit }: Props) {
+  const [q, setQ] = useState(value);
+
+  useEffect(() => {
+    setQ(value);
+  }, [value]);
+
+  const submit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    onSearchSubmit?.(q);
+    onSearchChange?.(q);
+  };
 
   return (
-    <div className="mb-4">
+    <form onSubmit={submit} className="flex gap-2">
       <input
         type="text"
-        value={searchTerm}
-        onChange={(e) => dispatch(setSearchTerm(e.target.value))}
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
         placeholder="Search products..."
-        className="w-full sm:w-96 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-400"
+        className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-green-400"
       />
-    </div>
+      <button
+        type="submit"
+        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+      >
+        Search
+      </button>
+    </form>
   );
 }

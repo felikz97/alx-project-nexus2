@@ -1,22 +1,22 @@
 // pages/about.tsx
-import React from "react";
+import Layout from "@/components/common/Layout";
 
 export default function AboutPage() {
   return (
-    <div className="p-6 max-w-3xl mx-auto text-gray-800">
-      <h1 className="text-3xl font-bold mb-4">About NexusStore</h1>
-      <p className="mb-4">
-        NexusStore is your trusted destination for the best electronics, fashion, and accessories.
-        We are committed to bringing you the most innovative and reliable products at unbeatable prices.
-      </p>
-      <p className="mb-4">
-        Our team is passionate about quality and customer satisfaction. We work directly with top manufacturers
-        and vendors to make sure our customers receive only authentic, high-performing products.
-      </p>
-      <p>
-        Whether you're upgrading your tech, refreshing your wardrobe, or searching for the perfect gift,
-        NexusStore is here to help you shop smarter and live better. Thank you for being part of our growing community.
-      </p>
-    </div>
+    <Layout>
+      <div className="max-w-3xl mx-auto bg-white p-6 rounded shadow">
+        <h1 className="text-3xl font-bold mb-4">About Us</h1>
+        <p className="mb-4 text-gray-700">
+          Welcome to our shop! We offer a variety of products, hand-picked to
+          ensure quality and affordability. Our mission is to bring you the best
+          online shopping experience possible.
+        </p>
+        <p className="text-gray-700">
+          This e-commerce platform is built with Next.js (frontend) and Django
+          REST Framework (backend). We use Redux for state management to make
+          your experience fast and smooth.
+        </p>
+      </div>
+    </Layout>
   );
 }

@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/router";
-import axios from "axios";
+import { registerUser } from "@/services/auth";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
 
   const [formData, setFormData] = useState({
     username: "",
+    Full_Name: "",
+    email: "",
     password: "",
   });
   const [loading, setLoading] = useState(false);
@@ -24,18 +26,11 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/login/`,
-        formData
-      );
-
-      // You can store token or session here
-      localStorage.setItem("accessToken", res.data.access);
-
-      alert("Login successful!");
-      router.push("/"); // Redirect to homepage or dashboard
+      await registerUser(formData);
+      alert("Registration successful! Redirecting to login...");
+      router.push("/login");
     } catch (err: any) {
-      setError(err.response?.data?.detail || "Invalid username or password");
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -43,7 +38,7 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-md mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Login</h1>
+      <h1 className="text-2xl font-bold mb-4">Register</h1>
       {error && <p className="text-red-600 mb-4">{error}</p>}
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
@@ -51,6 +46,23 @@ export default function LoginPage() {
           value={formData.username}
           onChange={handleChange}
           placeholder="Username"
+          className="border p-2 w-full"
+          required
+        />
+        <input
+          name="Full_Name"
+          value={formData.Full_Name}
+          onChange={handleChange}
+          placeholder="Full Name"
+          className="border p-2 w-full"
+          required
+        />
+        <input
+          name="email"
+          type="email"
+          value={formData.email}
+          onChange={handleChange}
+          placeholder="Email"
           className="border p-2 w-full"
           required
         />
@@ -66,9 +78,9 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="bg-blue-600 text-white px-4 py-2 rounded w-full"
+          className="bg-green-600 text-white px-4 py-2 rounded w-full"
         >
-          {loading ? "Logging in..." : "Login"}
+          {loading ? "Registering..." : "Register"}
         </button>
       </form>
     </div>

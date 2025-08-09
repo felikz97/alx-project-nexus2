@@ -1,45 +1,72 @@
-// components/product/ReviewList.tsx
-import { useSelector } from "react-redux";
-import { RootState } from "@/store";
+"use client";
 
-interface Props {
+import { useEffect, useState } from "react";
+
+interface Review {
+  id: number;
+  user: {
+    username: string;
+  };
+  rating: number;
+  comment: string;
+  created_at: string;
+}
+
+interface ReviewListProps {
   productId: number;
 }
 
-export default function ReviewList({ productId }: Props) {
-  const reviews = useSelector((state: RootState) =>
-    state.review.reviews.filter((r) => r.productId === productId)
-  );
+export default function ReviewList({ productId }: ReviewListProps) {
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const average =
-    reviews.reduce((acc, r) => acc + r.rating, 0) / (reviews.length || 1);
+  useEffect(() => {
+    if (!productId) return;
+
+    async function fetchReviews() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/reviews/?product=${productId}`
+        );
+        if (!res.ok) throw new Error("Failed to fetch reviews");
+
+        const data = await res.json();
+        setReviews(data);
+      } catch (err: any) {
+        setError(err.message || "Something went wrong");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchReviews();
+  }, [productId]);
+
+  if (loading) return <p>Loading reviews...</p>;
+  if (error) return <p className="text-red-600">Error: {error}</p>;
+  if (reviews.length === 0) return <p>No reviews yet. Be the first to review!</p>;
 
   return (
-    <div className="mt-6">
-      <h3 className="text-lg font-semibold mb-2">
-        Average Rating:{" "}
-        <span className="text-yellow-500">
-          {average.toFixed(1)} ⭐ ({reviews.length}{" "}
-          {reviews.length === 1 ? "review" : "reviews"})
-        </span>
-      </h3>
-
-      {reviews.length === 0 ? (
-        <p className="text-gray-500">No reviews yet. Be the first to review!</p>
-      ) : (
-        <div className="space-y-4">
-          {reviews.map((r) => (
-            <div key={r.id} className="bg-gray-100 p-3 rounded">
-              <div className="flex justify-between">
-                <span className="font-semibold">{r.user}</span>
-                <span className="text-yellow-500">{r.rating} ⭐</span>
-              </div>
-              <p className="text-sm text-gray-700">{r.comment}</p>
-              <p className="text-xs text-gray-400">{new Date(r.date).toDateString()}</p>
-            </div>
-          ))}
+    <div className="space-y-4">
+      {reviews.map((review) => (
+        <div key={review.id} className="border rounded p-4 bg-white shadow-sm">
+          <div className="flex justify-between items-center mb-2">
+            <p className="font-semibold">{review.user.username}</p>
+            <p className="text-yellow-500 font-bold">
+              {"★".repeat(review.rating)}
+              {"☆".repeat(5 - review.rating)}
+            </p>
+          </div>
+          <p className="text-gray-700 mb-2">{review.comment}</p>
+          <p className="text-xs text-gray-400">
+            {new Date(review.created_at).toLocaleDateString()}
+          </p>
         </div>
-      )}
+      ))}
     </div>
   );
 }

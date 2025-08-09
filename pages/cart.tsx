@@ -1,101 +1,91 @@
-import { useSelector, useDispatch } from "react-redux";
-import { RootState } from "@/store";
-import {
-  removeFromCart,
-  updateQuantity,
-} from "@/store/cartSlice";
-import { useRouter } from "next/router";
-import { CartItem } from "@/types/CartItem";
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect } from "react";
+
+type CartItem = {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+};
 
 export default function CartPage() {
-  const dispatch = useDispatch();
-  const router = useRouter();
-  const cartItems = useSelector((state: RootState) => state.cart.items);
+  // Example initial cart data, replace or fetch from context/api
+  const [cartItems, setCartItems] = useState<CartItem[]>([
+    { id: "1", name: "Product A", price: 25.99, quantity: 2 },
+    { id: "2", name: "Product B", price: 15.5, quantity: 1 },
+  ]);
 
+  // Calculate total price
   const totalPrice = cartItems.reduce(
-    (acc, item) => acc + item.price * item.quantity,
+    (sum, item) => sum + item.price * item.quantity,
     0
   );
 
-  const handleQuantityChange = (id: number, quantity: number) => {
-    if (quantity < 1) return;
-    dispatch(updateQuantity({ id, quantity }));
+  // Remove item by id
+  const removeItem = (id: string) => {
+    setCartItems((items) => items.filter((item) => item.id !== id));
+  };
+
+  // Place order handler
+  const placeOrder = () => {
+    if (cartItems.length === 0) {
+      alert("Your cart is empty.");
+      return;
+    }
+    // TODO: Add your order submission logic here (API call etc)
+    alert(`Order placed! Total: $${totalPrice.toFixed(2)}`);
+    // Clear cart after order
+    setCartItems([]);
   };
 
   return (
-    <div className="p-6 min-h-screen bg-gray-50">
-      <h1 className="text-3xl font-bold mb-6">🛒 Your Cart</h1>
+    <main className="max-w-3xl mx-auto p-4">
+      <h1 className="text-3xl font-bold mb-6">Your Cart</h1>
 
       {cartItems.length === 0 ? (
-        <div className="text-gray-500 text-center">
-          <p className="mb-4">Your cart is empty.</p>
-          <button
-            onClick={() => router.push("/")}
-            className="text-green-600 underline"
-          >
-            Continue Shopping
-          </button>
-        </div>
+        <p className="text-center text-gray-600">Your cart is empty.</p>
       ) : (
-        <div className="space-y-6">
-          {cartItems.map((item: CartItem) => (
-            <div
-              key={item.id}
-              className="bg-white p-4 rounded shadow flex flex-col md:flex-row justify-between items-center gap-4"
+        <ul className="space-y-4">
+          {cartItems.map(({ id, name, price, quantity }) => (
+            <li
+              key={id}
+              className="flex items-center justify-between border rounded p-4 shadow-sm"
             >
-              <div className="flex items-center gap-4 w-full md:w-2/3">
-                {item.image && (
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    width={80}
-                    height={80}
-                    className="rounded object-cover"
-                  />
-                )}
-                <div>
-                  <h2 className="text-lg font-semibold">{item.name}</h2>
-                  <p className="text-sm text-gray-500">{item.category}</p>
-                  <p className="text-green-600 font-semibold">
-                    Ksh {(item.price * item.quantity).toFixed(2)}
-                  </p>
-                </div>
+              <div>
+                <p className="font-semibold">{name}</p>
+                <p className="text-gray-600">
+                  ${price.toFixed(2)} × {quantity} = $
+                  {(price * quantity).toFixed(2)}
+                </p>
               </div>
-
-              <div className="flex items-center gap-4 w-full md:w-auto justify-end">
-                <input
-                  type="number"
-                  min={1}
-                  value={item.quantity}
-                  onChange={(e) =>
-                    handleQuantityChange(item.id, parseInt(e.target.value))
-                  }
-                  className="w-16 border rounded px-2 py-1 text-center"
-                />
-                <button
-                  onClick={() => dispatch(removeFromCart(item.id))}
-                  className="text-red-600 hover:underline"
-                >
-                  Remove
-                </button>
-              </div>
-            </div>
+              <button
+                onClick={() => removeItem(id)}
+                className="text-red-600 hover:text-red-800 font-semibold"
+                aria-label={`Remove ${name} from cart`}
+              >
+                Remove
+              </button>
+            </li>
           ))}
-
-          <div className="text-right mt-6">
-            <h3 className="text-xl font-bold mb-4">
-              Total: Ksh {totalPrice.toFixed(2)}
-            </h3>
-            <button
-              onClick={() => router.push("/checkout")}
-              className="bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 transition"
-            >
-              Proceed to Checkout
-            </button>
-          </div>
-        </div>
+        </ul>
       )}
-    </div>
+
+      {/* Total and place order */}
+      <div className="mt-8 flex justify-between items-center border-t pt-4">
+        <p className="text-xl font-bold">Total: ${totalPrice.toFixed(2)}</p>
+        <button
+          onClick={placeOrder}
+          disabled={cartItems.length === 0}
+          className={`bg-green-600 text-white px-6 py-2 rounded font-semibold transition ${
+            cartItems.length === 0
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:bg-green-700"
+          }`}
+        >
+          Place Order
+        </button>
+      </div>
+    </main>
   );
 }

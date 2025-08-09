@@ -1,31 +1,81 @@
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/store";
-import { setCategoryFilter } from "@/store/filterSlice";
+// components/common/FilterPanel.tsx
+import { useState } from "react";
 
-const categories = ["All", "Electronics", "Wearables", "Accessories"];
+interface Category {
+  id: number;
+  name: string;
+}
 
-export default function FilterPanel() {
-  const dispatch = useDispatch();
-  const selected = useSelector((state: RootState) => state.filter.category);
+interface Props {
+  categories?: Category[];
+  selectedCategory?: number | null;
+  onCategoryChange?: (categoryId: number | null) => void;
+  priceRange?: [number | null, number | null];
+  onPriceChange?: (range: [number | null, number | null]) => void;
+}
 
-  const handleClick = (category: string) => {
-    dispatch(setCategoryFilter(category));
+export default function FilterPanel({
+  categories = [],
+  selectedCategory = null,
+  onCategoryChange,
+  priceRange = [null, null],
+  onPriceChange,
+}: Props) {
+  const [min, setMin] = useState<number | "">(priceRange[0] ?? "");
+  const [max, setMax] = useState<number | "">(priceRange[1] ?? "");
+
+  const applyPrice = () => {
+    onPriceChange?.([min === "" ? null : Number(min), max === "" ? null : Number(max)]);
   };
 
   return (
-    <div className="flex gap-3 flex-wrap mb-6">
-      {categories.map((cat) => (
+    <div className="space-y-6">
+      <div>
+        <h4 className="font-semibold mb-2">Categories</h4>
+        <ul className="space-y-1">
+          <li
+            className={`cursor-pointer ${selectedCategory === null ? "text-green-600 font-bold" : ""}`}
+            onClick={() => onCategoryChange?.(null)}
+          >
+            All
+          </li>
+          {categories.map((c) => (
+            <li
+              key={c.id}
+              className={`cursor-pointer ${selectedCategory === c.id ? "text-green-600 font-bold" : ""}`}
+              onClick={() => onCategoryChange?.(c.id)}
+            >
+              {c.name}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <h4 className="font-semibold mb-2">Price Range</h4>
+        <div className="flex gap-2">
+          <input
+            type="number"
+            value={min}
+            onChange={(e) => setMin(e.target.value === "" ? "" : Number(e.target.value))}
+            placeholder="Min"
+            className="w-full border p-1 rounded"
+          />
+          <input
+            type="number"
+            value={max}
+            onChange={(e) => setMax(e.target.value === "" ? "" : Number(e.target.value))}
+            placeholder="Max"
+            className="w-full border p-1 rounded"
+          />
+        </div>
         <button
-          key={cat}
-          onClick={() => handleClick(cat)}
-          className={`px-4 py-2 rounded-full text-sm font-medium border transition 
-            ${selected === cat 
-              ? "bg-green-500 text-white border-green-600" 
-              : "bg-white text-gray-600 border-gray-300 hover:border-green-400 hover:text-green-600"}`}
+          onClick={applyPrice}
+          className="mt-2 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
         >
-          {cat}
+          Apply
         </button>
-      ))}
+      </div>
     </div>
   );
 }
