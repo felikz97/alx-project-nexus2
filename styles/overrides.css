@@ -1,0 +1,14 @@
+/* styles/overrides.css */
+
+body {
+  @apply bg-gray-50 text-gray-800 font-sans;
+}
+
+/* Custom scrollbars (optional) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 10px;
+}
