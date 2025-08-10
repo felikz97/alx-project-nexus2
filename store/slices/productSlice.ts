@@ -8,6 +8,7 @@ interface ProductState {
   status: "idle" | "loading" | "failed";
 }
 
+
 const initialState: ProductState = {
   products: [],
   status: "idle",

@@ -1,4 +1,4 @@
-// pages/product/[id].tsx
+// pages/products/[id].tsx
 import { useRouter } from "next/router";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/store";
@@ -19,12 +19,12 @@ export default function ProductDetails() {
   const [loading, setLoading] = useState(true);
   const [fetchedProduct, setFetchedProduct] = useState<Product | null>(null);
 
-  // Try from Redux first
+  // Try to get from Redux first
   const reduxProduct = useSelector((state: RootState) =>
     state.product.products.find((p) => p.id === Number(id))
   ) as Product | undefined;
 
-  // If not in Redux, fetch from API
+  // Fetch from API if not in Redux
   useEffect(() => {
     if (!id || reduxProduct) {
       setLoading(false);
@@ -34,7 +34,7 @@ export default function ProductDetails() {
     const fetchProduct = async () => {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${id}/`);
-        if (!res.ok) throw new Error("Failed to fetch");
+        if (!res.ok) throw new Error("Failed to fetch product");
         const data: Product = await res.json();
         setFetchedProduct(data);
       } catch (err) {
@@ -50,14 +50,13 @@ export default function ProductDetails() {
   const product = reduxProduct || fetchedProduct;
 
   const handleAddToCart = () => {
-    if (!product) return;
-    dispatch(addToCart(product));
+    if (product) {
+      dispatch(addToCart(product));
+    }
   };
 
   if (loading) {
-    return (
-      <div className="p-6 text-center">Loading product details...</div>
-    );
+    return <div className="p-6 text-center">Loading product details...</div>;
   }
 
   if (!product) {
@@ -86,15 +85,17 @@ export default function ProductDetails() {
         </Link>
 
         <div className="bg-white p-6 rounded-lg shadow-md flex flex-col md:flex-row gap-8">
+          {/* Product Image */}
           <div className="relative w-full md:w-1/2 h-64">
             <Image
               src={imageUrl}
-              alt={product.name}
+              alt={product.name || "Product"}
               fill
               className="object-cover rounded"
             />
           </div>
 
+          {/* Product Info */}
           <div className="flex-1">
             <h1 className="text-3xl font-bold">{product.name}</h1>
             <p className="text-gray-500">
@@ -109,14 +110,18 @@ export default function ProductDetails() {
               {product.description || "No description provided."}
             </p>
 
-            {/* Extra attributes */}
-            {product.colors?.length > 0 && (
-              <p className="text-sm text-gray-600">Colors: {product.colors.join(", ")}</p>
+            {/* Optional Attributes */}
+            {Array.isArray(product.colors) && product.colors.length > 0 && (
+              <p className="text-sm text-gray-600">
+                Colors: {product.colors.join(", ")}
+              </p>
             )}
-            {product.sizes?.length > 0 && (
-              <p className="text-sm text-gray-600">Sizes: {product.sizes.join(", ")}</p>
+            {Array.isArray(product.sizes) && product.sizes.length > 0 && (
+              <p className="text-sm text-gray-600">
+                Sizes: {product.sizes.join(", ")}
+              </p>
             )}
-            {product.shoe_sizes?.length > 0 && (
+            {Array.isArray(product.shoe_sizes) && product.shoe_sizes.length > 0 && (
               <p className="text-sm text-gray-600">
                 Shoe Sizes: {product.shoe_sizes.join(", ")}
               </p>
@@ -131,7 +136,7 @@ export default function ProductDetails() {
           </div>
         </div>
 
-        {/* Review Section */}
+        {/* Reviews */}
         <div className="mt-12">
           <h2 className="text-2xl font-bold mb-4">Customer Reviews</h2>
           <ReviewList productId={product.id} />

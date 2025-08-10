@@ -1,31 +1,39 @@
-import { Product } from "@/store/productSlice";
+import { Product } from "@/types/Product";
 import { useDispatch } from "react-redux";
 import { addToCart } from "@/store/cartSlice";
 import Image from "next/image";
 import Link from "next/link";
+import { useState, useCallback } from "react";
 
 export default function ProductCard({ product }: { product: Product }) {
   const dispatch = useDispatch();
+  const [imgSrc, setImgSrc] = useState(
+    product.image
+      ? product.image.startsWith("http")
+        ? product.image
+        : `${process.env.NEXT_PUBLIC_API_URL}${product.image}`
+      : "/images/placeholder.png"
+  );
 
-  // Ensure full image URL (DRF relative paths)
-  const imageUrl = product.image
-    ? product.image.startsWith("http")
-      ? product.image
-      : `${process.env.NEXT_PUBLIC_API_URL}${product.image}`
-    : "/images/placeholder.png";
+  const handleAddToCart = useCallback(() => {
+    dispatch(addToCart(product));
+  }, [dispatch, product]);
+
+  const categoryName =
+    typeof product.category === "string"
+      ? product.category
+      : product.category?.name || "Uncategorized";
 
   return (
     <div className="bg-white rounded-lg shadow-md p-4 flex flex-col hover:shadow-lg transition">
       {/* Product Image */}
       <div className="relative w-full h-48">
         <Image
-          src={imageUrl}
+          src={imgSrc}
           alt={product.name || "Product"}
           fill
           className="object-cover rounded"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = "/images/placeholder.png";
-          }}
+          onError={() => setImgSrc("/images/placeholder.png")}
         />
       </div>
 
@@ -37,22 +45,20 @@ export default function ProductCard({ product }: { product: Product }) {
         <p className="text-green-600 font-bold mb-1">
           Ksh {Number(product.price).toFixed(2)}
         </p>
-        <p className="text-sm text-gray-500">
-          {typeof product.category === "string"
-            ? product.category
-            : product.category?.name || "Uncategorized"}
-        </p>
+        <p className="text-sm text-gray-500">{categoryName}</p>
 
         {/* Optional Attributes */}
-        {product.colors?.length > 0 && (
+        {Array.isArray(product.colors) && product.colors.length > 0 && (
           <p className="text-xs text-gray-600 mt-1">
             Colors: {product.colors.join(", ")}
           </p>
         )}
-        {product.sizes?.length > 0 && (
-          <p className="text-xs text-gray-600">Sizes: {product.sizes.join(", ")}</p>
+        {Array.isArray(product.sizes) && product.sizes.length > 0 && (
+          <p className="text-xs text-gray-600">
+            Sizes: {product.sizes.join(", ")}
+          </p>
         )}
-        {product.shoe_sizes?.length > 0 && (
+        {Array.isArray(product.shoe_sizes) && product.shoe_sizes.length > 0 && (
           <p className="text-xs text-gray-600">
             Shoe Sizes: {product.shoe_sizes.join(", ")}
           </p>
@@ -61,7 +67,7 @@ export default function ProductCard({ product }: { product: Product }) {
         {/* Action Buttons */}
         <div className="mt-auto flex gap-2">
           <button
-            onClick={() => dispatch(addToCart(product))}
+            onClick={handleAddToCart}
             className="flex-1 bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition"
           >
             Add to Cart
